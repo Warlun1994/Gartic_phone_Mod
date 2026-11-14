@@ -57,6 +57,27 @@
 АВАРИЙНЫЙ СБРОС
  Ctrl+Alt+Shift+0 — сброс, если свой CSS скрыл редактор.
 
+ФАЙЛ РАСКЛАДКИ gartic-ui-layout.json (в этом репозитории)
+ Это готовый профиль расположения и размеров элементов Gartic Phone:
+ холст, панель инструментов, цветовая панель (скрыта), нижняя панель,
+ верхняя панель, раунд, таймер, PNG поверх холста, кнопка «Готово»
+ и 4 своих элемента (div.draw, div.side, #content и др.).
+
+ КАК ПРИМЕНИТЬ (импорт профиля-файла):
+ 1. Скачайте файл: откройте gartic-ui-layout.json на странице
+    репозитория и нажмите «Download raw file» (Скачать в исходном виде).
+ 2. В игре откройте панель редактора (⚙ UI) → вкладка «Раскладка».
+ 3. Нажмите кнопку «Загрузить раскладку из JSON-файла»
+    (в блоке «Файл») и выберите скачанный gartic-ui-layout.json.
+ 4. Подтвердите замену — кнопка «Заменить». Раскладка применится
+    сразу: положение, размеры, скрытие и свои элементы.
+    Уже сохранённые профили при этом не изменятся.
+ 5. (Необязательно) Нажмите «Сохранить текущую раскладку как профиль»,
+    чтобы в дальнейшем включать/выключать её одним кликом из списка
+    профилей.
+ 6. Вернуть всё как было: кнопка «Сбросить всё» во вкладке «Раскладка»
+    (или Ctrl+Alt+Shift+0, если редактор не открывается).
+
 ────────────────────────────────────────────────────────────────────
 PART 2. USER GUIDE IN ENGLISH
 ────────────────────────────────────────────────────────────────────
@@ -112,3 +133,25 @@ BRUSH / PRESSURE / MISC
 
 EMERGENCY RESET
  Ctrl+Alt+Shift+0 — reset if your custom CSS hid the editor.
+
+LAYOUT FILE gartic-ui-layout.json (in this repository)
+ This is a ready-made profile with the positions and sizes of the
+ Gartic Phone elements: canvas, tool panel, color panel (hidden),
+ bottom panel, top panel, round, timer, PNG over the canvas, the
+ "Done" button and 4 custom elements (div.draw, div.side, #content
+ and others).
+
+ HOW TO APPLY (importing the profile file):
+ 1. Download the file: open gartic-ui-layout.json on the repository
+    page and press "Download raw file".
+ 2. In the game open the editor panel (⚙ UI) → the "Layout" tab.
+ 3. Press the "Load a layout from a JSON file" button
+    (in the "File" block) and select the downloaded
+    gartic-ui-layout.json.
+ 4. Confirm the replacement - the "Replace" button. The layout is
+    applied immediately: positions, sizes, visibility and custom
+    elements. Already saved profiles are not affected.
+ 5. (Optional) Press "Save the current layout as a profile" so you
+    can toggle it later with one click from the profile list.
+ 6. To return everything as it was: the "Reset everything" button in
+    the "Layout" tab (or Ctrl+Alt+Shift+0 if the editor does not open).

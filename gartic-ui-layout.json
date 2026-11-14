@@ -1,0 +1,132 @@
+{
+  "app": "gartic-phone-ui-layout-editor",
+  "version": 1,
+  "setup": {
+    "elements": {
+      "canvas": {
+        "x": -150,
+        "y": -115,
+        "w": 140,
+        "h": 140,
+        "hidden": false
+      },
+      "colors": {
+        "x": -232,
+        "y": -221,
+        "w": 65,
+        "h": 65,
+        "hidden": true
+      },
+      "bottom": {
+        "x": -390,
+        "y": 58,
+        "w": 100,
+        "h": 100,
+        "hidden": false
+      },
+      "tools": {
+        "x": -1175,
+        "y": 125,
+        "w": 100,
+        "h": 100,
+        "hidden": false
+      },
+      "header": {
+        "x": 0,
+        "y": -120,
+        "w": 100,
+        "h": 100,
+        "hidden": false
+      },
+      "round": {
+        "x": 1238,
+        "y": -19,
+        "w": 50,
+        "h": 50,
+        "hidden": false
+      },
+      "timer": {
+        "x": 255,
+        "y": 15,
+        "w": 70,
+        "h": 70,
+        "hidden": false
+      },
+      "book": {
+        "x": 0,
+        "y": 0,
+        "w": 100,
+        "h": 100,
+        "hidden": false
+      },
+      "custom_mu8736qnys": {
+        "x": 0,
+        "y": 0,
+        "w": 100,
+        "h": 100,
+        "hidden": false
+      },
+      "custom_mu872otr20": {
+        "x": 0,
+        "y": 0,
+        "w": 100,
+        "h": 100,
+        "hidden": false
+      },
+      "custom_mu872uz8nm": {
+        "x": 0,
+        "y": 0,
+        "w": 100,
+        "h": 100,
+        "hidden": false
+      },
+      "custom_mu8733pkl9": {
+        "x": 0,
+        "y": 0,
+        "w": 100,
+        "h": 100,
+        "hidden": false
+      },
+      "bgoverlay": {
+        "x": -109,
+        "y": -80,
+        "w": 116.7,
+        "h": 129.9,
+        "hidden": false
+      },
+      "done": {
+        "x": 0,
+        "y": 0,
+        "w": 100,
+        "h": 100,
+        "hidden": false
+      },
+      "center": {
+        "x": 0,
+        "y": 0,
+        "w": 100,
+        "h": 100,
+        "hidden": false
+      }
+    },
+    "custom": {
+      "custom_mu872otr20": {
+        "name": "➕ div.jsx-ff1ec116deb5647a.draw",
+        "selector": "div.draw"
+      },
+      "custom_mu872uz8nm": {
+        "name": "➕ div.jsx-b6582d438744e10b.side",
+        "selector": "div.side"
+      },
+      "custom_mu8733pkl9": {
+        "name": "➕ div.jsx-d55deb365ffe203b.fade-enter-done",
+        "selector": "div.fade-enter-done"
+      },
+      "custom_mu8736qnys": {
+        "name": "➕ div#content",
+        "selector": "#content"
+      }
+    },
+    "names": {}
+  }
+}
