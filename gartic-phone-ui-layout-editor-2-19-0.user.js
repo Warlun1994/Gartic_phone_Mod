@@ -3,7 +3,6 @@
 // @namespace https://garticphone.com/
 // @version      2.19.0
 // @description  Редактор расположения интерфейса Gartic Phone: перемещение, размер, скрытие, сохранение и сброс элементов; визуальный режим редактирования мышью; переименование элементов; локальные сетапы; цветовой круг; окно референса \(картинка по ссылке или файлу, масштаб, прозрачность\); PNG поверх холста; свои шрифты и CSS; тёмная тема панели; простой и расширенный режимы; блок «Кисть» \(курсор кисти, тонкая кисть, нажим пера, передача нажима по сети\); список игроков с метками \(нов/блюр/ожидание\) и визуальным блюром рисунков\. По умолчанию не затрагивает логику игры\.
-// EN: @description  Gartic Phone UI layout editor: move, resize, hide, save and reset elements; visual mouse editing mode; element renaming; local setups; color wheel; reference window (image by URL or file, zoom, opacity); PNG over the canvas; custom fonts and CSS; dark panel theme; simple and advanced modes; Brush block (brush cursor, thin brush, pen pressure, pressure over the network); player list with marks (new/blur/waiting) and visual blur of drawings. Does not touch game logic by default.
 // @match https://garticphone.com/*
 // @run-at document-start
 // @grant GM_getValue
@@ -12,7 +11,6 @@
 // @grant unsafeWindow
 // @connect *
 // @connect нужен «*»: референс грузится по ЛЮБОЙ ссылке, которую вводит пользователь
-// EN: @connect needs "*": the reference is loaded from ANY URL the user enters
 // ==/UserScript==
 //
 (function () {
