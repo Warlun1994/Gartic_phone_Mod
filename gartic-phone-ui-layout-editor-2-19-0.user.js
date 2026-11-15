@@ -452,6 +452,10 @@
             'Запекать нажим в итоговый рисунок': 'Bake pressure into the final drawing',
             'Передавать нажим другим игрокам': 'Send pressure to other players',
             'Передавать нажим другим игрокам (экспериментально)': 'Send pressure to other players (experimental)',
+            'Передавать толщину и нажим другим игрокам': 'Send stroke width and pressure to other players',
+            'Толщина линии передаётся по сети. Нажим (переменная толщина внутри штриха) — разбиением на под-штрихи (до 8).': 'The line width is sent over the network. Pressure (variable width inside a stroke) is sent by splitting the stroke into sub-strokes (up to 8).',
+            'Перехват сети не удался': 'Network interception failed',
+            'Повторить перехват': 'Retry interception',
             'Курсор кисти': 'Brush cursor', 'Цвет': 'Color', 'Толщина': 'Thickness', 'Прозрачность': 'Opacity',
             'Тестовое поле для пера': 'Pen test area', 'Нажим сейчас': 'Current pressure',
             // - общие кнопки/действия --
@@ -6510,6 +6514,7 @@ html.gpue-edit #gpue-ref input[type=text]{cursor:text !important;user-select:tex
                     ', включено=' + yn(pub.on) + ', сообщений=' + pub.msgs + ', штрихов=' + pub.stroke +
                     ', заменено=' + pub.replaced + ' (сообщений отправлено ' + pub.sent + ', равномерных ' + pub.uniform + ')' +
                     ', кусков=' + pub.chunk + ', точек=' + pub.dot + ', держим=' + (pub.held || 0) + ', без профиля=' + pub.nomatch + ', чужой формат=' + pub.shape +
+                    ', было→стало=' + (pub.last || 'нет') +
                     ' | d1=' + pub.d1 + ' d2=' + pub.d2 + ' d3=' + pub.d3);
             } catch (e) { /* модуль недоступен */ }
             try {
@@ -9364,7 +9369,7 @@ html.gpue-edit #gpue-ref input[type=text]{cursor:text !important;user-select:tex
         const save = makeSaver(KEY, 'publish', () => cfg);
         function load() { if (loaded) return; loaded = true; const o = readStoreKey(KEY); if (o && typeof o === 'object' && typeof o.enabled === 'boolean') cfg.enabled = o.enabled; }
 
-        const stats = { msgs: 0, stroke: 0, shape: 0, replaced: 0, sent: 0, nomatch: 0, uniform: 0, d1: 0, d2: 0, d3: 0, chunk: 0, pref: 0, dot: 0 };
+        const stats = { msgs: 0, stroke: 0, shape: 0, replaced: 0, sent: 0, nomatch: 0, uniform: 0, d1: 0, d2: 0, d3: 0, chunk: 0, pref: 0, dot: 0, last: '' }; // last: «было→стало» | last: "was→became"
         const samples = [];              // последние сетевые сообщения — образцы для «Диагностики» | the latest network messages - samples for "Diagnostics"
         const ID_BASE = 900000 + Math.floor(Math.random() * 90000);
         let idShift = 0;
@@ -9755,6 +9760,7 @@ html.gpue-edit #gpue-ref input[type=text]{cursor:text !important;user-select:tex
                 stats.uniform++;
                 v[2][1] = qu;
                 stats.replaced++;
+                stats.last = 'ширина ' + size + ' → ' + qu; // для диагностики | for diagnostics
                 lastFull.set(v[1], { live: live, at: Date.now() });
                 return releaseHeld(v[1], qu, '42' + JSON.stringify(arr), data);
             }
@@ -9838,6 +9844,11 @@ html.gpue-edit #gpue-ref input[type=text]{cursor:text !important;user-select:tex
             }
             stats.replaced++;
             stats.sent += out.length;
+            // «было→стало» для диагностики: исходная ширина → диапазон под-штрихов
+            // "was→became" for diagnostics: the original width → the sub-stroke range
+            let wmin = Infinity, wmax = -Infinity;
+            for (const g of groups) { const w = Math.max(1, Math.round(g.q)); if (w < wmin) wmin = w; if (w > wmax) wmax = w; }
+            stats.last = 'ширина ' + v[2][1] + ' → ' + (wmin === wmax ? String(wmin) : wmin + '..' + wmax) + ' (' + out.length + ' под-шт.)';
             if (outIds.length > 1) {
                 usedIds.add(v[1]);
                 sentGroups.set(v[1], { ids: outIds, at: Date.now() });
@@ -9851,6 +9862,21 @@ html.gpue-edit #gpue-ref input[type=text]{cursor:text !important;user-select:tex
         }
 
         let installed = false, installErr = '', lastSocket = null, flushTimer = 0;
+        // баннер в блоке «Нажим кисти»: виден только если перехват не встал | a banner in the "Pen pressure" block: shown only if the hook failed
+        let pubWarnEl = null;
+        function updPubWarn() {
+            if (!pubWarnEl) return;
+            try {
+                pubWarnEl.textContent = '';
+                if (!installed) {
+                    pubWarnEl.appendChild(h('div', { text: 'Перехват сети не удался' + (installErr ? ': ' + installErr : '') }));
+                    const retry = h('button', { type: 'button', class: 'gpue-b gpue-ui-sm', text: 'Повторить перехват', style: 'margin-top:6px' });
+                    retry.addEventListener('click', () => install());
+                    pubWarnEl.appendChild(retry);
+                    pubWarnEl.style.display = 'block';
+                } else pubWarnEl.style.display = 'none';
+            } catch (e) { /* не критично */ }
+        }
         function install() {
             // ГЛАВНЫЙ ФИКС: перехват надо ставить в ПРОТОТИП СТРАНИЦЫ (unsafeWindow),
             // THE MAIN FIX: the hook must be installed on the PAGE PROTOTYPE (unsafeWindow),
@@ -9862,7 +9888,7 @@ html.gpue-edit #gpue-ref input[type=text]{cursor:text !important;user-select:tex
             // were not intercepted AT ALL (with any format).
             const PW = typeof unsafeWindow !== 'undefined' && unsafeWindow ? unsafeWindow : window;
             const WSP = PW.WebSocket && PW.WebSocket.prototype;
-            if (!WSP || typeof WSP.send !== 'function') { installErr = 'прототип WebSocket страницы недоступен'; return; }
+            if (!WSP || typeof WSP.send !== 'function') { installErr = 'прототип WebSocket страницы недоступен'; updPubWarn(); return; }
             if (WSP.send.__gpuePub) { installed = true; return; }
             const orig = WSP.send;
             const fn = function (data) {
@@ -9908,6 +9934,7 @@ html.gpue-edit #gpue-ref input[type=text]{cursor:text !important;user-select:tex
                     }, 500);
                 }
             } catch (e) { installErr = 'не удалось заменить send: ' + (e && e.message ? e.message : e); }
+            updPubWarn();
         }
         install(); // document-start: раньше сокета игры | document-start: earlier than the game socket
         // Если прототип WebSocket ещё не создан/недоступен, пробуем позже:
@@ -9926,9 +9953,14 @@ html.gpue-edit #gpue-ref input[type=text]{cursor:text !important;user-select:tex
 
         function row() {
             load();
-            const r = uiSwitch('Передавать нажим другим игрокам (экспериментально)', v => { cfg.enabled = v !== false; save(); });
+            const r = uiSwitch('Передавать толщину и нажим другим игрокам', v => { cfg.enabled = v !== false; save(); });
             r.set(cfg.enabled !== false);
-            return r.row;
+            // подсказка: что именно увидят игроки без мода | hint: what exactly players without the mod will see
+            const hint = h('div', { class: 'gpue-hint', text: 'Толщина линии передаётся по сети. Нажим (переменная толщина внутри штриха) — разбиением на под-штрихи (до 8).' });
+            // баннер: перехват не встал — причина и кнопка «повторить» | banner: the hook failed - the reason and a "retry" button
+            if (!pubWarnEl) pubWarnEl = h('div', { class: 'gpue-ui-warnbox', style: 'display:none' });
+            updPubWarn();
+            return h('div', { style: 'display:flex;flex-direction:column;gap:4px' }, [r.row, hint, pubWarnEl]);
         }
         return {
             row, install,
@@ -9937,7 +9969,7 @@ html.gpue-edit #gpue-ref input[type=text]{cursor:text !important;user-select:tex
                 msgs: stats.msgs, stroke: stats.stroke, replaced: stats.replaced,
                 sent: stats.sent, nomatch: stats.nomatch, shape: stats.shape, uniform: stats.uniform,
                 d1: stats.d1, d2: stats.d2, d3: stats.d3, pref: stats.pref, chunk: stats.chunk, dot: stats.dot,
-                held: heldStart.size
+                last: stats.last, held: heldStart.size
             })
         };
     })();
