@@ -48,8 +48,14 @@
  • Элементы игроков в лобби и на экранах подключения/выбора режима
    закрашиваются теми же цветами (жёлтый/красный/синий), при просмотре
    альбома — тоже.
+ • Вы сами в списке не отображаетесь: себя нельзя отметить «новым»
+   и нельзя заблюрить — даже если вы создали лобби.
 
 КИСТЬ / НАЖИМ / ПРОЧЕЕ
+ • ВАЖНО: толщина штрихов («тонкая кисть» и нажим пера) теперь видна
+   И ИГРОКАМ БЕЗ МОДА — публикация толщины по сети включена по
+   умолчанию. При обычных настройках кисти мод ничего в сеть не
+   отправляет, а явное выключение публикации сохраняется.
  • Вкладка «Рисование»: курсор кисти, тонкая кисть, нажим пера.
  • Вкладка «Оформление»: тема, фоны, свои шрифты и CSS.
  • «Диагностика» — технический отчёт (при проблемах).
@@ -125,8 +131,15 @@ PLAYERS LIST (👥 button)
  • Player elements in the lobby and on the connection/mode-selection
    screens are painted the same colors (yellow/red/blue); album
    entries are marked too.
+ • You yourself are not shown in the list: you can never be marked
+   as "new" and cannot be blurred - even if you created the lobby.
 
 BRUSH / PRESSURE / MISC
+ • IMPORTANT: the stroke thickness ("thin brush" and pen pressure) is
+   now visible TO PLAYERS WITHOUT THE MOD TOO - publishing the
+   thickness over the network is enabled by default. With default
+   brush settings the mod sends nothing to the network, and an
+   explicit OFF choice is still respected.
  • "Drawing" tab: brush cursor, thin brush, pen pressure.
  • "Appearance" tab: theme, backgrounds, custom fonts and CSS.
  • "Diagnostics" — a technical report (use it if something breaks).
