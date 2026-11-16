@@ -13,6 +13,14 @@
 // @connect нужен «*»: референс грузится по ЛЮБОЙ ссылке, которую вводит пользователь
 // ==/UserScript==
 //
+// ⚠ ВНИМАНИЕ: ЭТО ТЕСТОВАЯ ВЕРСИЯ. Работа не выполнена полностью — возможны ошибки
+// и недоработки. Мод можно дорабатывать самостоятельно: код открыт, комментарии
+// продублированы на русском и английском, настройки хранятся в GM-хранилище.
+//
+// ⚠ NOTE: THIS IS A TEST VERSION. The work is not fully complete - bugs and rough
+// edges are possible. The mod can be refined by yourself: the code is open, comments
+// are duplicated in Russian and English, settings are stored in GM storage.
+//
 (function () {
     'use strict';
 
