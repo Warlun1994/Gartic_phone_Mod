@@ -9351,15 +9351,11 @@ html.gpue-edit #gpue-ref input[type=text]{cursor:text !important;user-select:tex
     // =====================================================
     const PressurePublish = (() => {
         const KEY = 'gpUiPublish.v1';
-        // публикация нажима по сети — теперь ВКЛЮЧЕНА по умолчанию: без неё игроки без мода
-        // publishing pressure over the network is now ENABLED by default: without it, players
-        // видят стандартную толщину штрихов (без «тонкой кисти» и нажима пера).
-        // without the mod see the standard stroke thickness (no "thin brush" and pen pressure).
-        // Вмешательство минимально: ширина меняется только когда локально включена тонкая кисть
-        // The interference is minimal: the width is changed only when the thin brush or pen
-        // или нажим пера; явное выключение в настройках сохраняется и уважается.
-        // pressure change the local look; an explicit OFF choice in settings is stored and respected.
-        const DEF = { enabled: true };
+        // публикация нажима по сети — экспериментальная функция и по умолчанию
+        // publishing pressure over the network is an experimental feature and by default
+        // ВЫКЛЮЧЕНА (вмешательство в игровой протокол). Включается только вручную.
+        // DISABLED (interference with the game protocol). Enabled only manually.
+        const DEF = { enabled: false };
         let cfg = Object.assign({}, DEF), loaded = false;
         const save = makeSaver(KEY, 'publish', () => cfg);
         function load() { if (loaded) return; loaded = true; const o = readStoreKey(KEY); if (o && typeof o === 'object' && typeof o.enabled === 'boolean') cfg.enabled = o.enabled; }
@@ -10942,85 +10938,6 @@ html.gpue-edit #gpue-ref input[type=text]{cursor:text !important;user-select:tex
             return Array.from(out);
         }
 
-        // --------- свой ник: самих себя не помечаем «новым» и не даём себя заблюрить ----------
-        // --------- own nick: we never mark ourselves as "new" and never blur ourselves ----------
-        // Кандидаты собираем из localStorage/sessionStorage (ключи с nick/user/name/player/profile),
-        // We collect candidates from localStorage/sessionStorage (keys with nick/user/name/player/profile),
-        // из полей name/nick в JSON-значениях, из текстовых инпутов профиля и из DOM-карточек .me/.self.
-        // from name/nick fields inside JSON values, from profile text inputs and from .me/.self DOM cards.
-        // Кэш обновляется не чаще раза в 5 секунд — isSelf() вызывается на каждом тике.
-        // The cache is refreshed at most once per 5 seconds - isSelf() runs on every tick.
-        let selfCands = new Set(), selfAt = 0;
-        function nickLike(s) {
-            const c = cleanName(s).trim();
-            if (!c || c.length > 24) return false;
-            if (/@|https?:|<\/?[a-z]|\{|\}/i.test(c)) return false;
-            if (PLACEHOLDER_RE.test(c)) return false;
-            return true;
-        }
-        function refreshSelf(force) {
-            const now = Date.now();
-            if (!force && selfCands.size && now - selfAt < 5000) return;
-            selfAt = now;
-            try {
-                const storages = [];
-                try { storages.push(localStorage); } catch (e) { /* нет доступа */ }
-                try { storages.push(sessionStorage); } catch (e) { /* нет доступа */ }
-                for (const st of storages) {
-                    let keys = [];
-                    try { keys = Array.from({ length: st.length }, (_, i) => st.key(i)); } catch (e) { keys = []; }
-                    for (const k of keys.slice(0, 300)) {
-                        if (!/nick|user|name|player|me|profile/i.test(String(k))) continue;
-                        let v = null;
-                        try { v = st.getItem(k); } catch (e) { continue; }
-                        if (!v || typeof v !== 'string' || v.length > 512) continue;
-                        if (nickLike(v)) selfCands.add(v.trim());
-                        // JSON-значения: имя может лежать в поле name/nick/... | JSON values: the name may sit in a name/nick/... field
-                        if (/^[\[{]/.test(v)) {
-                            try {
-                                const o = JSON.parse(v);
-                                const walk = (x, d) => {
-                                    if (!x || typeof x !== 'object' || d > 3) return;
-                                    for (const kk of Object.keys(x)) {
-                                        if (/^(name|nick|nickname|username|user|player)$/i.test(kk) && typeof x[kk] === 'string' && nickLike(x[kk])) selfCands.add(x[kk].trim());
-                                        else walk(x[kk], d + 1);
-                                    }
-                                };
-                                walk(o, 0);
-                            } catch (e) { /* не JSON */ }
-                        }
-                    }
-                }
-            } catch (e) { /* хранилище недоступно */ }
-            // DOM-фолбэк: собственная карточка игрока часто помечена классами me/self/you
-            // DOM fallback: the own player card is often marked with the me/self/you classes
-            try {
-                document.querySelectorAll('.user.me, .user.self, .user.you, .me .nick, .self .nick, .you .nick').forEach(el => {
-                    const nm = cleanName(el.textContent).trim().replace(/\s+/g, ' ').slice(0, 24);
-                    if (nickLike(nm)) selfCands.add(nm);
-                });
-            } catch (e) { /* не критично */ }
-            // инпут ника в профиле/настройках (короткий text-input с осмысленным значением)
-            // the nick input in the profile/settings (a short text input with a meaningful value)
-            try {
-                document.querySelectorAll('input[type="text"], input:not([type])').forEach(inp => {
-                    const v = String(inp.value || '').trim();
-                    const ml = inp.maxLength > 0 ? inp.maxLength : 99;
-                    if (v && ml <= 24 && nickLike(v)) selfCands.add(v);
-                });
-            } catch (e) { /* не критично */ }
-            // если себя исторически всё же заблюрили (старая версия) — немедленно снимаем
-            // if we were historically blurred anyway (an older version) - remove it immediately
-            for (const n of Array.from(selfCands)) {
-                if (blurred.has(n)) { blurred.delete(n); save(); applyBlur(); }
-            }
-        }
-        function isSelf(name) {
-            if (!name) return false;
-            try { refreshSelf(false); } catch (e) { /* не критично */ }
-            return selfCands.has(String(name).trim());
-        }
-
         // --------- состояние ----------
         // --------- state ----------
         function cfg() {
@@ -11079,9 +10996,6 @@ html.gpue-edit #gpue-ref input[type=text]{cursor:text !important;user-select:tex
             }
         }
         function toggleBlur(name) {
-            // себя заблюрить нельзя — молча игнорируем (крестик у своего ника и так не рисуется)
-            // blurring ourselves is not allowed - silently ignored (the cross is not rendered at our own nick anyway)
-            if (isSelf(name)) return;
             if (blurred.has(name)) {
                 blurred.delete(name);
                 uiToast('🖼 «' + name + '»: блюр снят — рисунок снова виден');
@@ -11099,13 +11013,6 @@ html.gpue-edit #gpue-ref input[type=text]{cursor:text !important;user-select:tex
         // --------- лобби: скан + украшение ников (крестик ✕ и подсветка, как в студии) ----------
         // --------- lobby: scan + decorating nicks (the cross ✕ and the highlight, as in the studio) ----------
         function decorate(entry, name) {
-            // свой ник: ни крестика, ни меток; убираем то, что могло остаться от прошлых проверок
-            // own nick: no cross, no marks; we clean up anything left from previous passes
-            if (isSelf(name)) {
-                try { entry.classList.remove('gpue-pl-new', 'gpue-pl-blk', 'gpue-pl-rel'); } catch (e) { /* не критично */ }
-                try { const old = entry.querySelector(':scope > .gpue-pl-plus'); if (old) old.remove(); } catch (e) { /* не критично */ }
-                return;
-            }
             let b = null;
             try { b = entry.querySelector(':scope > .gpue-pl-plus'); } catch (e) { b = null; }
             if (!b) {
@@ -11143,9 +11050,6 @@ html.gpue-edit #gpue-ref input[type=text]{cursor:text !important;user-select:tex
                 if (isMine(entry)) continue;
                 const name = nameOf(entry);
                 if (!name || !isRealName(name) || seen.has(name)) continue;
-                // самих себя в список не берём: ни в окне, ни в составе, ни в метках
-                // we do not take ourselves into the list: neither in the window, nor in the roster, nor in the marks
-                if (isSelf(name)) continue;
                 seen.add(name);
                 let av = '';
                 try { const img = entry.querySelector('img'); if (img) av = img.getAttribute('src') || img.src || ''; } catch (e) { av = ''; }
@@ -11169,8 +11073,6 @@ html.gpue-edit #gpue-ref input[type=text]{cursor:text !important;user-select:tex
                 try { nick = item.querySelector('.nick'); } catch (e) { nick = null; }
                 if (!nick || isMine(nick)) continue;
                 const name = cleanName(nick.textContent).trim();
-                // свой ник в альбоме не красим и снимаем старые метки | we do not paint our own nick in the album and remove old marks
-                if (isSelf(name)) { try { nick.classList.remove('gpue-pl-new', 'gpue-pl-blk', 'gpue-pl-wait', 'gpue-pl-rel', 'gpue-pl-sm'); } catch (e) {} continue; }
                 if (!name || !isRealName(name)) { try { nick.classList.remove('gpue-pl-new', 'gpue-pl-blk', 'gpue-pl-wait', 'gpue-pl-rel', 'gpue-pl-sm'); } catch (e) {} continue; }
                 const isBlk = blurred.has(name);
                 const isW = waiting.has(name);
@@ -11266,9 +11168,7 @@ html.gpue-edit #gpue-ref input[type=text]{cursor:text !important;user-select:tex
             // names from network frames - so that those who join DURING the game get into "Waiting"
             try {
                 const ns = (info && info.names) || [];
-                // своё имя из сетевых кадров не берём — мы не «новый» и не «ожидание»
-                // we do not take our own name from network frames - we are neither "new" nor "waiting"
-                for (const n of ns) { if (isRealName(n) && !isSelf(n)) netNames.add(cleanName(n)); }
+                for (const n of ns) { if (isRealName(n)) netNames.add(cleanName(n)); }
             } catch (e) { /* не критично */ }
             scheduleTick(60);
         }
