@@ -9351,11 +9351,13 @@ html.gpue-edit #gpue-ref input[type=text]{cursor:text !important;user-select:tex
     // =====================================================
     const PressurePublish = (() => {
         const KEY = 'gpUiPublish.v1';
-        // публикация нажима по сети — экспериментальная функция и по умолчанию
-        // publishing pressure over the network is an experimental feature and by default
-        // ВЫКЛЮЧЕНА (вмешательство в игровой протокол). Включается только вручную.
-        // DISABLED (interference with the game protocol). Enabled only manually.
-        const DEF = { enabled: false };
+        // публикация толщины/нажима по сети включена ПО УМОЛЧАНИЮ: альбом у других игроков
+        // publishing thickness/pressure over the network is ENABLED BY DEFAULT: other players'
+        // перерисовывается из сетевых данных штрихов, поэтому без публикации они видят
+        // albums are re-rendered from the network stroke data, so without publishing they see
+        // стандартную толщину кисти. Отключается переключателем «Передавать нажим другим игрокам».
+        // the standard brush thickness. It can be disabled with the "Publish pressure to other players" switch.
+        const DEF = { enabled: true };
         let cfg = Object.assign({}, DEF), loaded = false;
         const save = makeSaver(KEY, 'publish', () => cfg);
         function load() { if (loaded) return; loaded = true; const o = readStoreKey(KEY); if (o && typeof o === 'object' && typeof o.enabled === 'boolean') cfg.enabled = o.enabled; }
